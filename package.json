@@ -1,0 +1,71 @@
+{
+  "name": "react-minimal-boilerplate",
+  "version": "1.0.0",
+  "description": "Minimal starter environment for beginners in React",
+  "scripts": {
+    "start": "npm-run-all -p watch server livereload",
+    "server": "nodemon index.js",
+    "livereload": "browser-sync reload --files 'views/index.jade, build/*' --url https://localhost:4000",
+    "build:js": "browserify app/app.js | uglifyjs > build/bundle.js",
+    "build:css": "stylus --include-css -u autoprefixer-stylus app/app.styl -o build/main.css",
+    "build:css-compress": "npm run build:css -- --compress",
+    "build": "npm-run-all -p build:js build:css-compress",
+    "watch:js": "watchify -d app/app.js -o build/bundle.js",
+    "watch:css": "npm run build:css -- --watch --sourcemap-inline",
+    "watch": "npm-run-all -p watch:js watch:css",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "autoprefixer-stylus": "^0.8.1",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-react": "^6.3.13",
+    "babel-preset-stage-0": "^6.3.13",
+    "babelify": "^7.2.0",
+    "browser-sync": "^2.11.0",
+    "browserify": "^12.0.1",
+    "concurrently": "^1.0.0",
+    "react": "^0.14.6",
+    "react-dom": "^0.14.6",
+    "stylus": "^0.53.0",
+    "uglify-js": "^2.6.1",
+    "watchify": "^3.6.1"
+  },
+  "keywords": [
+    "react",
+    "babel",
+    "stylus",
+    "browser-sync"
+  ],
+  "author": "Nekorsis @Nekorsis",
+  "license": "MIT",
+  "browserify": {
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "es2015",
+            "react",
+            "stage-0"
+          ]
+        }
+      ]
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "dependencies": {
+    "eslint": "^1.10.3",
+    "express": "^4.13.3",
+    "jade": "^1.11.0",
+    "mysql": "^2.10.2",
+    "sequelize": "^3.17.3",
+    "socket.io": "^1.4.4"
+  }
+}
