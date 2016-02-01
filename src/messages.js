@@ -17,6 +17,10 @@ var Messages = sequelize.define('MesagesTable', {
 		type: Sequelize.INTEGER,
 		field: 'UsersendID'
 	},
+	Username:{
+		type: Sequelize.STRING,
+		field: 'Username'
+	},
 	MessageID: {
 		type: Sequelize.INTEGER,
 		autoIncrement: true,

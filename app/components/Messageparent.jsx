@@ -10,40 +10,39 @@ export default class Messageparent extends React.Component {
 	constructor(props){
 		super(props)
 		this.state = {
-			MsgText: '',
-			username: '',
+			MessageValue: '',
+			Username: '',
 		}
 	};
 	setUsername = () => {
-		socket.emit('loginuser', this.state.username);
+		socket.emit('loginuser', this.state.Username);
 		this.setState({
-			username: ""
+			Username: ""
 		})
 	};
 	sendToServer = () => {
-		console.log('Send to server: ' + this.props.userID + " " + this.props.username + " " + this.state.MsgText);
-   		socket.emit('msg', this.props.userID, this.props.username, this.state.MsgText);
+   		socket.emit('msg', this.props.UserID, this.props.Username, this.state.MessageValue);
    		this.setState({
-   			MsgText: "" 
+   			MessageValue: "" 
    		})
   	};
   	changeTextUserField = event => {
   		this.setState({
-  			username: event.target.value
+  			Username: event.target.value
   		})
   	};
 	changeTextMsgField = event => {
 	    this.setState({
-	    	MsgText: event.target.value
+	    	MessageValue: event.target.value
 	    })
 	};
 	render() {
     	return (
      	 <div>
-     	 	<Messageinput text={this.state.MsgText} onChange={this.changeTextMsgField} />
+     	 	<Messageinput text={this.state.MessageValue} onChange={this.changeTextMsgField} />
      	 	<Messagesend onClick={this.sendToServer} />
-     	 	{this.props.username ? " " : <Usernameinput text={this.state.username} onChange={this.changeTextUserField} />}
-     	 	{this.props.username ? " " : <Usernamebutton onClick={this.setUsername} />}
+     	 	{this.props.Username ? " " : <Usernameinput text={this.state.Username} onChange={this.changeTextUserField} />}
+     	 	{this.props.Username ? " " : <Usernamebutton onClick={this.setUsername} />}
      	 </div>
    		 )
  	};

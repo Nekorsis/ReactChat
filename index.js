@@ -9,17 +9,17 @@ var messagedb = require('./src/messages');
 app.set('view engine', 'jade');
 app.use(express.static('build'));
 
-http.listen(port, () => {
+http.listen(port, function() {
 	console.log("server is up");
 });
 
-var usernames = {};
+var usernames = [];
 
 app.get('/', function (req, res){
 	res.render('index');
 });
 
-
+/*
 usersdb.Users.findAll({
 	where: {
 		UserID: {
@@ -29,7 +29,7 @@ usersdb.Users.findAll({
 }).then(function (Users) {
 	result = Users.map(instance => instance.toJSON());
 });
-
+*/
 messagedb.Messages.findAll({
 	where: {
 		MessageID: {
@@ -39,35 +39,61 @@ messagedb.Messages.findAll({
 }).then(function (Messages){
 	result = Messages.map(instance => instance.toJSON());
 	console.log(result);
-})
-
+});
 
 io.on('connection', function (socket){
-	var historyload = true;
 	var addedUser = false;
-	socket.on('test_react_msg', function(data){
-		console.log('its fucking happening ' + data);
-		io.sockets.emit('test_react_sendback', data);
-	});
+	var historyload = true;	
+	if (historyload){
+		messagedb.Messages.findAll({
+			where: {
+				MessageID: {
+					gt: 0
+				}
+			}
+		}).then(function (Messages){
+			result = Messages.map(instance => instance.toJSON());
+			io.sockets.connected[socket.id].emit('historyload', result)
+			historyload = false;
+		})
+	};	
+
 	socket.on('loginuser', function(username){
 		usersdb.Users.findOrCreate({
 			where: {Username: username},
 			defaults: {Username: username}
 		}).spread(function(userinstance){
-			console.log('We found this: ' + userinstance.UserID + " " + userinstance.Username + " " + userinstance.createdAt);
-			//эмитить найденные данные
-			io.sockets.connected[socket.id].emit('test2', userinstance.UserID, userinstance.Username);
+			socket.username = userinstance.Username;
+			/*
+			addedUser = true;
+			var tempObj = {
+				username: userinstance.Username,
+				ID: userinstance.UserID
+			};
+			usernames.push(tempObj);
+			console.log(usernames);
+			io.sockets.emit('userlist', usernames);
+			*/
+			io.sockets.connected[socket.id].emit('userset', userinstance.UserID, userinstance.Username);	
 		});
 	});
-
-	socket.on('msg', function(userID, userName, msgVal){
-		console.log("event called " + userID + " " + userName + " " + msgVal);
+	/*
+	socket.on('disconnect', function(){
+		io.sockets.emit('user left', usernames);
+		if (addedUser){
+			delete usernames[tempObj];
+		}
+		io.sockets.emit('userlist', usernames);
+	});
+	*/
+	socket.on('msg', function(UserID, Username, MessageValue){
 		messagedb.Messages.sync({force: false}).then(function (){
 			return messagedb.Messages.create({
-				UsersendID: userID,
-				MessageValue: msgVal
+				UsersendID: UserID,
+				Username: Username,
+				MessageValue: MessageValue
 			}).then(function(Messages){
-				io.sockets.emit('msg_sendback', {userID, userName, msgID: Messages.MessageID, msgVal});
+				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: Messages.MessageID, MessageValue});
 			}).catch(function (err){
 				console.log(err);
 			});

@@ -8,23 +8,27 @@ export default class Storage extends React.Component {
 	constructor(props){
 		super(props)
 		this.state = {
-			userID: "",
-			username: "",
+			UserID: "",
+			Username: "",
+			Users: [],
 		}
 	}
 	componentDidMount(){
-		socket.on('test2', (userID, username)=> {
-			console.log("Storage data: ", userID, username);
+		socket.on('userset', (UserID, Username) => {
 			this.setState({
-				userID : userID,
-				username: username,
+				UserID : UserID,
+				Username: Username,
 			})
+		});
+		socket.on('userlist', usernames => {
+			this.setState({ Users: [...this.state.Users, usernames]});
+			console.log(this.state.Users);
 		});
 	};
 	render (){
 		return <div>
 					<Messagelistparent/>
-					<Messageparent username={this.state.username} userID={this.state.userID} />
+					<Messageparent Username={this.state.Username} UserID={this.state.UserID} />
 				</div>
 	};
 };
