@@ -1,3 +1,4 @@
+
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
@@ -19,7 +20,7 @@ app.get('/', function (req, res){
 	res.render('index');
 });
 
-/*
+
 usersdb.Users.findAll({
 	where: {
 		UserID: {
@@ -29,7 +30,7 @@ usersdb.Users.findAll({
 }).then(function (Users) {
 	result = Users.map(instance => instance.toJSON());
 });
-*/
+/*
 messagedb.Messages.findAll({
 	where: {
 		MessageID: {
@@ -38,10 +39,10 @@ messagedb.Messages.findAll({
 	}
 }).then(function (Messages){
 	result = Messages.map(instance => instance.toJSON());
-	console.log(result);
 });
-
+*/
 io.on('connection', function (socket){
+	io.sockets.connected[socket.id].emit('userlist', usernames);	
 	var addedUser = false;
 	var historyload = true;	
 	if (historyload){
@@ -64,7 +65,6 @@ io.on('connection', function (socket){
 			defaults: {Username: username}
 		}).spread(function(userinstance){
 			socket.username = userinstance.Username;
-			/*
 			addedUser = true;
 			var tempObj = {
 				username: userinstance.Username,
@@ -73,19 +73,19 @@ io.on('connection', function (socket){
 			usernames.push(tempObj);
 			console.log(usernames);
 			io.sockets.emit('userlist', usernames);
-			*/
 			io.sockets.connected[socket.id].emit('userset', userinstance.UserID, userinstance.Username);	
 		});
 	});
-	/*
 	socket.on('disconnect', function(){
-		io.sockets.emit('user left', usernames);
-		if (addedUser){
-			delete usernames[tempObj];
+		//delete usernames[tempObj];
+		for (var i = 0; i<usernames.length; i++){
+			if (usernames[i].username === socket.username){
+				usernames.splice(i, 1);
+			}
 		}
+		console.log("after disconnect: ", usernames);
 		io.sockets.emit('userlist', usernames);
 	});
-	*/
 	socket.on('msg', function(UserID, Username, MessageValue){
 		messagedb.Messages.sync({force: false}).then(function (){
 			return messagedb.Messages.create({

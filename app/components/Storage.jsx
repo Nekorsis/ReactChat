@@ -21,12 +21,26 @@ export default class Storage extends React.Component {
 			})
 		});
 		socket.on('userlist', usernames => {
-			this.setState({ Users: [...this.state.Users, usernames]});
+			//this.setState({ Users: [...this.state.Users, usernames]});
+			//console.log(this.state.Users);
+			let testArr = [];
+			usernames.map((arr) =>{
+				testArr.push(arr);
+			});
+			this.setState({Users: testArr});
 			console.log(this.state.Users);
 		});
 	};
 	render (){
 		return <div>
+					<div>
+					<h4>Users online:</h4>
+					<ol className="test2">
+        				{this.state.Users.map(function(user) {
+         			 		return <li key={user.ID}>{user.username}</li>;
+       					 })}
+      				</ol>
+      				</div>	
 					<Messagelistparent/>
 					<Messageparent Username={this.state.Username} UserID={this.state.UserID} />
 				</div>

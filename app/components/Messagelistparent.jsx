@@ -14,10 +14,8 @@ export default class Messagelistparent extends React.Component{
 	componentDidMount(){
 		socket.on('historyload', result =>{
 			this.setState({messages: result});
-			console.log(this.state.messages);
 		});
 		socket.on('msg_sendback', tempObj =>{
-			console.log(tempObj);
 			this.setState({ messages: [...this.state.messages, tempObj]});
 		});
 	};
