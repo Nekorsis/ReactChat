@@ -20,7 +20,15 @@ app.get('/', function (req, res){
 	res.render('index');
 });
 
-
+function SimpleValidation(name){
+	for (var i = 0; i<usernames.length; i++){
+		if (usernames[i].username === name){
+			console.log(usernames[i] + i + name);
+			return true
+		}
+	}
+};
+/*
 usersdb.Users.findAll({
 	where: {
 		UserID: {
@@ -29,16 +37,7 @@ usersdb.Users.findAll({
 	}
 }).then(function (Users) {
 	result = Users.map(instance => instance.toJSON());
-});
-/*
-messagedb.Messages.findAll({
-	where: {
-		MessageID: {
-			gt: 0
-		}
-	}
-}).then(function (Messages){
-	result = Messages.map(instance => instance.toJSON());
+	console.log(result);
 });
 */
 io.on('connection', function (socket){
@@ -59,31 +58,33 @@ io.on('connection', function (socket){
 		})
 	};	
 
-	socket.on('loginuser', function(username){
-		usersdb.Users.findOrCreate({
-			where: {Username: username},
-			defaults: {Username: username}
-		}).spread(function(userinstance){
-			socket.username = userinstance.Username;
-			addedUser = true;
-			var tempObj = {
-				username: userinstance.Username,
-				ID: userinstance.UserID
-			};
-			usernames.push(tempObj);
-			console.log(usernames);
-			io.sockets.emit('userlist', usernames);
-			io.sockets.connected[socket.id].emit('userset', userinstance.UserID, userinstance.Username);	
-		});
+	socket.on('loginuser', function(username, password){
+		if (SimpleValidation(username)){
+			io.sockets.connected[socket.id].emit('overlap');
+		} else {
+			usersdb.Users.findOrCreate({
+				where: {Username: username, password: password},
+				defaults: {Username: username, password: password}
+			}).spread(function(userinstance){
+				socket.username = userinstance.username;
+				addedUser = true;
+				var tempObj = {
+					username: userinstance.Username,
+					ID: userinstance.UserID
+				};
+				usernames.push(tempObj);
+				io.sockets.emit('userlist', usernames);
+				io.sockets.connected[socket.id].emit('userset', userinstance.UserID, userinstance.Username);
+				return true;
+			})
+		}
 	});
 	socket.on('disconnect', function(){
-		//delete usernames[tempObj];
 		for (var i = 0; i<usernames.length; i++){
 			if (usernames[i].username === socket.username){
 				usernames.splice(i, 1);
 			}
 		}
-		console.log("after disconnect: ", usernames);
 		io.sockets.emit('userlist', usernames);
 	});
 	socket.on('msg', function(UserID, Username, MessageValue){
@@ -92,8 +93,8 @@ io.on('connection', function (socket){
 				UsersendID: UserID,
 				Username: Username,
 				MessageValue: MessageValue
-			}).then(function(Messages){
-				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: Messages.MessageID, MessageValue});
+			}).then(function(message){
+				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, messagedate: message.createdAt});
 			}).catch(function (err){
 				console.log(err);
 			});

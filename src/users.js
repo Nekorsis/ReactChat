@@ -22,6 +22,14 @@ var Users = sequelize.define('UsersTable', {
 	Username: {
 		type: Sequelize.STRING,
 		field: 'username',
+	},
+	password: {
+		type: Sequelize.STRING,
+		field: 'password',
+	},
+	salt: {
+		type: Sequelize.STRING,
+		field: 'salt',
 	}
 }, {
 	freezeTableName: true
