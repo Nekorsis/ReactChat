@@ -30,18 +30,7 @@ function SimpleValidation(name){
 		}
 	}
 };
-/*
-usersdb.Users.findAll({
-	where: {
-		UserID: {
-			gt: 0
-		}
-	}
-}).then(function (Users) {
-	result = Users.map(instance => instance.toJSON());
-	console.log(result);
-});
-*/
+
 io.on('connection', function (socket){
 
 	socket.on('reqest history 1', function(){
@@ -83,22 +72,6 @@ io.on('connection', function (socket){
 
 	io.sockets.connected[socket.id].emit('userlist', usernames);	
 	var addedUser = false;
-	/*
-	var historyload = true;	
-	if (historyload){
-		messagedb.Messages.findAll({
-			where: {
-				MessageID: {
-					gt: 0
-				}
-			}
-		}).then(function (Messages){
-			result = Messages.map(instance => instance.toJSON());
-			io.sockets.connected[socket.id].emit('historyload', result)
-			historyload = false;
-		})
-	};	
-	*/
 	socket.on('loginuser', function(username, password){
 		if (SimpleValidation(username)){
 			io.sockets.connected[socket.id].emit('overlap');
@@ -129,19 +102,6 @@ io.on('connection', function (socket){
 		io.sockets.emit('userlist', usernames);
 	});
 	socket.on('msg', function(UserID, Username, MessageValue, currentRoom){
-		/*
-		messagedb.Messages.sync({force: false}).then(function (){
-			return messagedb.Messages.create({
-				UsersendID: UserID,
-				Username: Username,
-				MessageValue: MessageValue
-			}).then(function(message){
-				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, messagedate: message.createdAt});
-			}).catch(function (err){
-				console.log(err);
-			});
-		});
-*/
 	switch(currentRoom){
 		case 1:
 			messagedb.Messages.create({
