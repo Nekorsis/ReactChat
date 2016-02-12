@@ -6,6 +6,8 @@ var io = require('socket.io')(http);
 var port = process.env.PORT || 4000;
 var usersdb = require('./src/users');
 var messagedb = require('./src/messages');
+var chat2 = require('./src/chatroom2');
+var chat3 = require('./src/chatroom3');
 
 app.set('view engine', 'jade');
 app.use(express.static('build'));
@@ -41,8 +43,47 @@ usersdb.Users.findAll({
 });
 */
 io.on('connection', function (socket){
+
+	socket.on('reqest history 1', function(){
+		messagedb.Messages.findAll({
+			where: {
+				MessageID: {
+					gt: 0
+				}
+			}
+		}).then(function (Messages){
+			result = Messages.map(instance => instance.toJSON());
+			io.sockets.connected[socket.id].emit('historyload', result)
+		});
+	});
+	socket.on('reqest history 2', function(){
+		chat2.chatroom2.findAll({
+			where: {
+				MessageID: {
+					gt: 0
+				}
+			}
+		}).then(function (Messages){
+			result = Messages.map(instance => instance.toJSON());
+			io.sockets.connected[socket.id].emit('historyload', result)
+		});
+	});
+	socket.on('reqest history 3', function(){
+		chat3.chatroom3.findAll({
+			where: {
+				MessageID: {
+					gt: 0
+				}
+			}
+		}).then(function (Messages){
+			result = Messages.map(instance => instance.toJSON());
+			io.sockets.connected[socket.id].emit('historyload', result);
+		});
+	});
+
 	io.sockets.connected[socket.id].emit('userlist', usernames);	
 	var addedUser = false;
+	/*
 	var historyload = true;	
 	if (historyload){
 		messagedb.Messages.findAll({
@@ -57,7 +98,7 @@ io.on('connection', function (socket){
 			historyload = false;
 		})
 	};	
-
+	*/
 	socket.on('loginuser', function(username, password){
 		if (SimpleValidation(username)){
 			io.sockets.connected[socket.id].emit('overlap');
@@ -87,7 +128,8 @@ io.on('connection', function (socket){
 		}
 		io.sockets.emit('userlist', usernames);
 	});
-	socket.on('msg', function(UserID, Username, MessageValue){
+	socket.on('msg', function(UserID, Username, MessageValue, currentRoom){
+		/*
 		messagedb.Messages.sync({force: false}).then(function (){
 			return messagedb.Messages.create({
 				UsersendID: UserID,
@@ -99,6 +141,34 @@ io.on('connection', function (socket){
 				console.log(err);
 			});
 		});
+*/
+	switch(currentRoom){
+		case 1:
+			messagedb.Messages.create({
+				UsersendID: UserID,
+				Username: Username,
+				MessageValue: MessageValue
+			}).then(function(message){
+				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, messagedate: message.createdAt});
+			});
+			break;
+		case 2:
+			chat2.chatroom2.create({
+				UsersendID: UserID,
+				Username: Username,
+				MessageValue: MessageValue
+			}).then(function(message){
+				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, messagedate: message.createdAt});
+			});
+		case 3:
+			chat3.chatroom3.create({
+				UsersendID: UserID,
+				Username: Username,
+				MessageValue: MessageValue
+			}).then(function(message){
+				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, messagedate: message.createdAt});
+			});
+	};
 	});
 });
 

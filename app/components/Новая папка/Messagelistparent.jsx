@@ -1,7 +1,9 @@
 import React from 'react'
+import Messagebox from './Messagebox.jsx'
 var socket = io()
 
-export default class Messagelist extends React.Component {
+
+export default class Messagelistparent extends React.Component{
 	constructor(props){
 		super(props)
 		this.state = {
@@ -18,16 +20,16 @@ export default class Messagelist extends React.Component {
 		});
 	};
 
-	render() {
+render() {
  		 return (
-    		<div className="messagebox">
-    			<h3>Room number 1</h3>
-      			<ol className="messagelist">
+    		<Messagebox>
+      			<ol className="msg_list">
         			{this.state.messages.map(function(message) {
-         			 	return <li key={message.MessageID}>{message.MessageDate+ ": " + message.Username + ": " + message.MessageValue}</li>;
+         			 	return <li key={message.MessageID}>{message.Username + ": " + message.MessageValue}</li>;
        				 })}
       			</ol>
-    		</div>
+    		</Messagebox>
   		);
 	};
 };
+

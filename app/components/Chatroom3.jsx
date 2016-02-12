@@ -1,14 +1,13 @@
 import React from 'react'
 var socket = io()
 
-export default class Messagelist extends React.Component {
+export default class Chatroom3 extends React.Component {
 	constructor(props){
 		super(props)
 		this.state = {
 			messages: [],
 		}
 	};
-
 	componentDidMount(){
 		socket.on('historyload', result =>{
 			this.setState({messages: result});
@@ -21,7 +20,7 @@ export default class Messagelist extends React.Component {
 	render() {
  		 return (
     		<div className="messagebox">
-    			<h3>Room number 1</h3>
+    			<h3>Room number 3</h3>
       			<ol className="messagelist">
         			{this.state.messages.map(function(message) {
          			 	return <li key={message.MessageID}>{message.MessageDate+ ": " + message.Username + ": " + message.MessageValue}</li>;
