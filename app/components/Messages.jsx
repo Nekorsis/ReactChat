@@ -24,6 +24,7 @@ export default class Messages extends React.Component {
 			return false;
 		};
 	};
+
 	render(){
 		return(
 				<div className="inputdiv">

@@ -20,6 +20,7 @@ var Users = sequelize.define('UsersTable', {
 		field: 'userid'
 	},
 	Username: {
+		unique: true,
 		type: Sequelize.STRING,
 		field: 'username',
 	},

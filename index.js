@@ -25,14 +25,31 @@ app.get('/', function (req, res){
 function SimpleValidation(name){
 	for (var i = 0; i<usernames.length; i++){
 		if (usernames[i].username === name){
-			console.log(usernames[i] + i + name);
 			return true
 		}
 	}
 };
-
+	var tempObj2 = {
+					username: "Nekorsis2",
+					ID: 2
+				};
+	usernames.push(tempObj2);
 io.on('connection', function (socket){
-
+	console.log(usernames);
+	var initialLoad = false;
+	if (!initialLoad){
+		messagedb.Messages.findAll({
+			where: {
+				MessageID: {
+					gt: 0
+				}
+			}
+		}).then(function (Messages){
+			result = Messages.map(instance => instance.toJSON());
+			io.sockets.connected[socket.id].emit('historyload', result)
+		});
+		initialLoad = true;
+	};
 	socket.on('reqest history 1', function(){
 		messagedb.Messages.findAll({
 			where: {
@@ -64,14 +81,24 @@ io.on('connection', function (socket){
 					gt: 0
 				}
 			}
-		}).then(function (Messages){
+		}).then(function(Messages){
 			result = Messages.map(instance => instance.toJSON());
 			io.sockets.connected[socket.id].emit('historyload', result);
 		});
 	});
 
-	io.sockets.connected[socket.id].emit('userlist', usernames);	
-	var addedUser = false;
+	usersdb.Users.findAll({
+		where: {
+			UserID: {
+				gt: 0
+			}
+		}
+	}).then(function(userlist){
+		result = userlist.map(instance => instance.toJSON());
+		io.sockets.connected[socket.id].emit('userlist', result);
+		io.sockets.emit('users online', usernames);
+	});
+
 	socket.on('loginuser', function(username, password){
 		if (SimpleValidation(username)){
 			io.sockets.connected[socket.id].emit('overlap');
@@ -80,27 +107,29 @@ io.on('connection', function (socket){
 				where: {Username: username, password: password},
 				defaults: {Username: username, password: password}
 			}).spread(function(userinstance){
-				socket.username = userinstance.username;
-				addedUser = true;
+				socket.username = userinstance.Username;
+		
 				var tempObj = {
 					username: userinstance.Username,
 					ID: userinstance.UserID
 				};
 				usernames.push(tempObj);
-				io.sockets.emit('userlist', usernames);
+				console.log(usernames);
+				io.sockets.emit('users online', usernames);
 				io.sockets.connected[socket.id].emit('userset', userinstance.UserID, userinstance.Username);
 				return true;
 			})
 		}
 	});
+
 	socket.on('disconnect', function(){
 		for (var i = 0; i<usernames.length; i++){
 			if (usernames[i].username === socket.username){
 				usernames.splice(i, 1);
 			}
 		}
-		io.sockets.emit('userlist', usernames);
 	});
+
 	socket.on('msg', function(UserID, Username, MessageValue, currentRoom){
 	switch(currentRoom){
 		case 1:
@@ -109,7 +138,7 @@ io.on('connection', function (socket){
 				Username: Username,
 				MessageValue: MessageValue
 			}).then(function(message){
-				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, messagedate: message.createdAt});
+				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, MessageDate: message.createdAt});
 			});
 			break;
 		case 2:
@@ -118,16 +147,18 @@ io.on('connection', function (socket){
 				Username: Username,
 				MessageValue: MessageValue
 			}).then(function(message){
-				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, messagedate: message.createdAt});
+				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, MessageDate: message.createdAt});
 			});
+			break;
 		case 3:
 			chat3.chatroom3.create({
 				UsersendID: UserID,
 				Username: Username,
 				MessageValue: MessageValue
 			}).then(function(message){
-				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, messagedate: message.createdAt});
+				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, MessageDate: message.createdAt});
 			});
+			break;
 	};
 	});
 });

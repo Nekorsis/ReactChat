@@ -15,6 +15,7 @@ export default class Layout extends React.Component {
 			users: [],
 			charRooms: [],
 			currentRoom: "",
+			usersonline: [],
 		}
 	}
 	componentDidMount(){
@@ -30,13 +31,17 @@ export default class Layout extends React.Component {
 				userID: userID,
 				username: username,
 			})
+			this.forceUpdate();
 		});
-		socket.on('userlist', usernames => {
+		socket.on('users online', useronline => {
 			let testArr = [];
-			usernames.map((arr) => {
+			useronline.map((arr) => {
 				testArr.push(arr);
 			});
-			this.setState({users: testArr});
+			this.setState({usersonline: testArr});
+		});
+		socket.on('userlist', usernames => {
+			this.setState({users: usernames});
 		});
 	};
 	swtichRoom1 = () =>{
@@ -62,11 +67,11 @@ export default class Layout extends React.Component {
 			<div>
 				<div className="mainroom">
 					<div className="userlist">
-					<h4>Users online:</h4>
+					<h4>Users list:</h4>
 					<ol className="ol userlist">
-	        				{this.state.users.map(function(user) {
-	         			 		return <li key={user.ID}>{user.username}</li>;
-	       					 })}
+	        		{this.state.users.map((user) => {
+	        			return <li key={user.UserID} className={this.state.usersonline.includes(user.Username) ? 'useronline' : ' '}>{user.Username}</li>;
+   					})}
 	      			</ol>
 	      			</div>
 					{this.state.username ? " ": <Loginform/>}
