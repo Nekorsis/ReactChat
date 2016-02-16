@@ -17,16 +17,16 @@ export default class Messagelist extends React.Component {
 			this.setState({ messages: [...this.state.messages, tempObj]});
 		});
 	};
-	test = () =>{
-		console.log('hello');
+	test = (id) =>{
+		console.log(id);
 	};
 	render() {
  		 return (
     		<div className="messagebox">
     			<h3>Room number 1</h3>
       			<ol className="messagelist">
-        			{this.state.messages.map(function(message) {
-         			 	return <li className="messageinstance" key={message.MessageID} onClick={console.log("hello world")}>{message.MessageID+ ": " + message.Username + ": " + message.MessageValue}</li>;
+        			{this.state.messages.map((message) => {
+         			 	return <li className="messageinstance" key={message.MessageID} onClick={this.test.bind(null, message.MessageID)}>{message.MessageID+ ": " + message.Username + ": " + message.MessageValue}</li>;
        				 })}
       			</ol>
     		</div>
