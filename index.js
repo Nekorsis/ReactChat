@@ -6,8 +6,6 @@ var io = require('socket.io')(http);
 var port = process.env.PORT || 4000;
 var usersdb = require('./src/users');
 var messagedb = require('./src/messages');
-var chat2 = require('./src/chatroom2');
-var chat3 = require('./src/chatroom3');
 
 app.set('view engine', 'jade');
 app.use(express.static('build'));
@@ -29,13 +27,82 @@ function SimpleValidation(name){
 		}
 	}
 };
-	var tempObj2 = {
-					username: "Nekorsis2",
-					ID: 2
-				};
-	usernames.push(tempObj2);
+/*
+usersdb.Users.sync({force: true}).then(function () {
+  // Table created
+  return Users.create({
+  	UserID: 4,
+    Username: 'Nekorsis666',
+    password: '123'
+  });
+});
+*/
+/*
+messagedb.Messages.findAll({
+	where: {
+		MessageID: {
+			gt: 0
+		}
+	}
+}).then(function (Messages){
+	result = Messages.map(instance => instance.toJSON());
+	console.log(result);
+});
+*/
+
+usersdb.Users.findAll({
+		where: {
+			UserID: {
+				gt: 0
+			}
+		}
+	}).then(function(userlist){
+		result = userlist.map(instance => instance.toJSON());
+		console.log(result);
+	});
+
 io.on('connection', function (socket){
-	console.log(usernames);
+
+	socket.on('startSingleConversation', (username) =>{
+		usersdb.Users.findOne({
+			where: {
+				Username: username
+			}
+		}).then((userinstance)=> {
+			io.sockets.connected[socket.id].emit('startSingleConversationSendBack', {UserID: userinstance.UserID, Username: userinstance.Username});
+		});
+	});
+	socket.on('sendDialogueMessage', (messageObject) =>{
+		console.log(messageObject);
+		messagedb.Messages.create({
+			DialogueID: messageObject.currrendDiaglogue,
+			UsersendID: messageObject.userID,
+			Username: messageObject.username,
+			MessageValue: messageObject.messageValue,
+		}).then((messageinstance) =>{
+				io.sockets.connected[socket.id].emit('singleDialogueSendBack', messageinstance);
+		});
+		/*
+		messagedb.Messages.sync({force: false}).then(()=>{
+			return Messages.create({
+				DialogueID: messageObject.currrendDiaglogue,
+				UsersendID: messageObject.userID,
+				Username: messageObject.username,
+				MessageValue: messageObject.MessageValue,
+			});
+		});
+		*/
+	});
+	socket.on('requestDialogueHistory',(dialogueID)=>{
+		messagedb.Messages.findAll({
+			where: {
+				DialogueID: dialogueID
+			}
+		}).then((dialogueHistory)=>{
+			result = dialogueHistory.map(instance => instance.toJSON());
+			io.sockets.connected[socket.id].emit('dialogueHistorySendBack', result);
+		})
+	});
 	var initialLoad = false;
 	if (!initialLoad){
 		messagedb.Messages.findAll({
@@ -46,46 +113,11 @@ io.on('connection', function (socket){
 			}
 		}).then(function (Messages){
 			result = Messages.map(instance => instance.toJSON());
-			io.sockets.connected[socket.id].emit('historyload', result)
+			//io.sockets.connected[socket.id].emit('historyload', result)
+			//io.sockets.emit('redux test', result);
 		});
 		initialLoad = true;
 	};
-	socket.on('reqest history 1', function(){
-		messagedb.Messages.findAll({
-			where: {
-				MessageID: {
-					gt: 0
-				}
-			}
-		}).then(function (Messages){
-			result = Messages.map(instance => instance.toJSON());
-			io.sockets.connected[socket.id].emit('historyload', result)
-		});
-	});
-	socket.on('reqest history 2', function(){
-		chat2.chatroom2.findAll({
-			where: {
-				MessageID: {
-					gt: 0
-				}
-			}
-		}).then(function (Messages){
-			result = Messages.map(instance => instance.toJSON());
-			io.sockets.connected[socket.id].emit('historyload', result)
-		});
-	});
-	socket.on('reqest history 3', function(){
-		chat3.chatroom3.findAll({
-			where: {
-				MessageID: {
-					gt: 0
-				}
-			}
-		}).then(function(Messages){
-			result = Messages.map(instance => instance.toJSON());
-			io.sockets.connected[socket.id].emit('historyload', result);
-		});
-	});
 
 	usersdb.Users.findAll({
 		where: {
@@ -108,13 +140,11 @@ io.on('connection', function (socket){
 				defaults: {Username: username, password: password}
 			}).spread(function(userinstance){
 				socket.username = userinstance.Username;
-		
 				var tempObj = {
 					username: userinstance.Username,
 					ID: userinstance.UserID
 				};
 				usernames.push(tempObj);
-				console.log(usernames);
 				io.sockets.emit('users online', usernames);
 				io.sockets.connected[socket.id].emit('userset', userinstance.UserID, userinstance.Username);
 				return true;
@@ -129,39 +159,42 @@ io.on('connection', function (socket){
 			}
 		}
 	});
+	socket.on('message delete', function(id){
+		messagedb.Messages.findOne({
+			where:{
+				MessageID: id,
+			}
+		}).then(function(messageinstance){
+			messageinstance.destroy();
+			messagedb.Messages.findAll({
+			where: {
+				MessageID: {
+					gt: 0
+				}
+			}
+		}).then(function (Messages){
+			result = Messages.map(instance => instance.toJSON());
+			io.sockets.connected[socket.id].emit('historyload', result)
+		});
+		});
+	});
+	socket.on('addFriend', function(friendUsername, friendUserID, userID){
+		console.log("addFriend: ",friendUsername, friendUserID, userID);
 
-	socket.on('msg', function(UserID, Username, MessageValue, currentRoom){
-	switch(currentRoom){
-		case 1:
-			messagedb.Messages.create({
-				UsersendID: UserID,
-				Username: Username,
-				MessageValue: MessageValue
-			}).then(function(message){
-				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, MessageDate: message.createdAt});
-			});
-			break;
-		case 2:
-			chat2.chatroom2.create({
-				UsersendID: UserID,
-				Username: Username,
-				MessageValue: MessageValue
-			}).then(function(message){
-				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, MessageDate: message.createdAt});
-			});
-			break;
-		case 3:
-			chat3.chatroom3.create({
-				UsersendID: UserID,
-				Username: Username,
-				MessageValue: MessageValue
-			}).then(function(message){
-				io.sockets.emit('msg_sendback', {UserID, Username, MessageID: message.MessageID, MessageValue, MessageDate: message.createdAt});
-			});
-			break;
-	};
+		usersdb.Users.findOne({
+			where: {
+				UserID: userID
+			}
+		}).then((userinstance)=>{
+			var tempArr = userinstance.friends.split(',');
+			console.log(tempArr);
+			if(tempArr.includes(friendUserID)){
+				console.log('fail');
+			} else {
+				console.log('true');
+			};
+		});
+
+
 	});
 });
-
-
-

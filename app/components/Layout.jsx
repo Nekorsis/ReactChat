@@ -2,8 +2,8 @@ import React from 'react'
 import Loginform from './Loginform.jsx'
 import Messages from './Messages.jsx'
 import Messagelist from './Messagelist.jsx'
-import Chatroom2 from './Chatroom2.jsx'
-import Chatroom3 from './Chatroom3.jsx'
+import {connect} from 'react-redux'
+
 var socket = io()
 
 export default class Layout extends React.Component {
@@ -13,15 +13,35 @@ export default class Layout extends React.Component {
 			userID: "",
 			username: "",
 			users: [],
-			charRooms: [],
-			currentRoom: "",
 			usersonline: [],
+			friendsList: [],
+			dialogues: [],
+			currrendDiaglogue: "",
+			dialogueMessages: [],
+			dialogueUsername: "",
 		}
 	}
 	componentDidMount(){
-		this.setState({
-			chatRooms: [1,2,3],
-			currentRoom: 1,
+		socket.on('friendlist', (friends)=>{
+			console.log(friends);
+		});
+		socket.on('dialogueHistorySendBack',(dialogueHistory)=>{
+			this.setState({
+				 dialogueMessages: dialogueHistory
+			});
+		});
+		socket.on('singleDialogueSendBack', (messageinstance)=>{
+			this.setState({
+				 dialogueMessages: [...this.state.dialogueMessages, messageinstance]
+			});
+		});
+		socket.on('startSingleConversationSendBack', (userinstance)=>{
+			let tempUserId = this.state.userID;
+			this.setState({
+				dialogueUsername: userinstance.Username,
+				currrendDiaglogue: tempUserId +"."+ userinstance.UserID,
+			});
+			socket.emit('requestDialogueHistory', this.state.currrendDiaglogue);
 		});
 		socket.on('overlap', () =>{
 			alert('this username is already in use');
@@ -31,7 +51,6 @@ export default class Layout extends React.Component {
 				userID: userID,
 				username: username,
 			})
-			this.forceUpdate();
 		});
 		socket.on('users online', useronline => {
 			let testArr = [];
@@ -44,23 +63,27 @@ export default class Layout extends React.Component {
 			this.setState({users: usernames});
 		});
 	};
-	swtichRoom1 = () =>{
-		this.setState({
-			currentRoom: 1, 
-		});
-		socket.emit('reqest history 1');
+	parseDate = (date) =>{
+		let tempDate = date.split("-");
+		let parsedOnce = tempDate[2].substr(3);
+		let parsedTwice = parsedOnce.substr(0, parsedOnce.length-5);
+		return parsedTwice;
 	};
-	swtichRoom2 = () =>{
-		this.setState({
-			currentRoom: 2,
-		});
-		socket.emit('reqest history 2');
+	addFriend = (friendUsername, friendUserID) =>{
+		//not working right now
+		if(!this.state.username){
+			return false
+		} else {
+			//socket.emit('addFriend', friendUsername, friendUserID, this.state.userID);
+			console.log('addFriend: ', friendUsername);
+		};
 	};
-	swtichRoom3 = () =>{
-		this.setState({
-			currentRoom: 3,
-		});
-		socket.emit('reqest history 3');
+	startConversation = (username) =>{
+		if(this.state.username && this.state.username != username){
+			socket.emit('startSingleConversation', username);
+		} else {
+			return false;
+		};
 	};
 	render() {
 		return (
@@ -70,20 +93,23 @@ export default class Layout extends React.Component {
 					<h4>Users list:</h4>
 					<ol className="ol userlist">
 	        		{this.state.users.map((user) => {
-	        			return <li key={user.UserID} className={this.state.usersonline.includes(user.Username) ? 'useronline' : ' '}>{user.Username}</li>;
+	        			return <li key={user.UserID}  className={this.state.usersonline.includes(user.Username) ? 'useronline' : ' '}><div onClick={this.startConversation.bind(null, user.Username)}>{user.Username}</div><span onClick={this.addFriend.bind(null, user.Username, user.UserID)}><img src="http://puu.sh/nb58l/ff58ac09fc.png"/></span></li>;
    					})}
-	      			</ol>
-	      			</div>
+	      	</ol>
+					<h4>Friends:</h4>
+	      	</div>
 					{this.state.username ? " ": <Loginform/>}
-					<div>
-						<button className="switchrooms" onClick={this.swtichRoom1}>Room 1</button>
-						<button className="switchrooms" onClick={this.swtichRoom2}>Room 2</button>
-						<button className="switchrooms" onClick={this.swtichRoom3}>Room 3</button>
-						{this.state.currentRoom == 1 ? <Messagelist/> : " " }
-						{this.state.currentRoom == 2 ? <Chatroom2/> : " "}
-						{this.state.currentRoom == 3 ? <Chatroom3/> : " "}
+					<div className="messagebox">
+						<h2>Dialogue with {this.state.dialogueUsername}</h2>
+						<div className={this.state.currrendDiaglogue}>
+							<ol>
+								{this.state.dialogueMessages.map((message)=>{
+									return <li key={message.MessageID}>{message.MessageDate + ": " + message.MessageValue}</li>
+								})}
+							</ol>
+						</div>
 					</div>
-					{!this.state.username ? " ": <Messages username={this.state.username} userID={this.state.userID} currentRoom={this.state.currentRoom}/>}
+					{!this.state.username && this.state.currrendDiaglogue ? " ": <Messages username={this.state.username} userID={this.state.userID} currrendDiaglogue={this.state.currrendDiaglogue}/>}
 				</div>
 			</div>
 		)

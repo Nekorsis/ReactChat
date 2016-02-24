@@ -13,6 +13,10 @@ var sequelize = new Sequelize('UsersDB', config.username, '529406ab', {
 });
 
 var Messages = sequelize.define('MesagesTable', {
+  DialogueID:{
+    type: Sequelize.STRING,
+    field: 'DialogueID'
+  },
 	UsersendID:{
 		type: Sequelize.INTEGER,
 		field: 'UsersendID'
@@ -36,4 +40,4 @@ var Messages = sequelize.define('MesagesTable', {
 		defaultValue: Sequelize.NOW
 	}
 });
-module.exports = {sequelize, Messages}; 
+module.exports = {sequelize, Messages};

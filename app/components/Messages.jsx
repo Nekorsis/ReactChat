@@ -14,6 +14,16 @@ export default class Messages extends React.Component {
 			messagevalue: event.target.value
 		});
 	};
+	sendDialogueMessage = () => {
+		if(this.state.messagevalue){
+			socket.emit('sendDialogueMessage', {currrendDiaglogue: this.props.currrendDiaglogue, userID: this.props.userID, username: this.props.username, messageValue: this.state.messagevalue} );
+			this.setState({
+				messagevalue: '',
+			});
+		} else {
+			return false;
+		}
+	};
 	sendmessage = () => {
 		if(this.state.messagevalue){
 			socket.emit('msg', this.props.userID, this.props.username, this.state.messagevalue, this.props.currentRoom);
@@ -29,7 +39,7 @@ export default class Messages extends React.Component {
 		return(
 				<div className="inputdiv">
 					<input type="text" placeholder="Enter your message here..." value={this.state.messagevalue} onChange={this.messageinputchanges}/>
-					<input type="button" value="Send" onClick={this.sendmessage}></input>
+					<input type="button" value="Send" onClick={this.sendDialogueMessage}></input>
 				</div>
 			)
 	}

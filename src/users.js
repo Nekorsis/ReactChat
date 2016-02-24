@@ -22,7 +22,12 @@ var Users = sequelize.define('UsersTable', {
 	Username: {
 		unique: true,
 		type: Sequelize.STRING,
+		unique: true,
 		field: 'username',
+	},
+	friends: {
+		type: Sequelize.STRING,
+		field: 'friends',
 	},
 	password: {
 		type: Sequelize.STRING,
