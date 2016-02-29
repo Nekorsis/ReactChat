@@ -19,7 +19,7 @@ var usernames = [];
 app.get('/', function (req, res){
 	res.render('index');
 });
-
+/*
 function SimpleValidation(name){
 	for (var i = 0; i<usernames.length; i++){
 		if (usernames[i].username === name){
@@ -27,7 +27,8 @@ function SimpleValidation(name){
 		}
 	}
 };
-
+*/
+/*
 usersdb.Users.sync({force: true}).then(function () {
   // Table created
   return Users.create({
@@ -36,7 +37,8 @@ usersdb.Users.sync({force: true}).then(function () {
     password: '123'
   });
 });
-
+*/
+/*
 messagedb.Messages.sync({force: true}).then(()=>{
 	return Messages.create({
 		DialogueID: 3,
@@ -46,7 +48,7 @@ messagedb.Messages.sync({force: true}).then(()=>{
 		MessageValue: 'Hello',
 	})
 });
-
+*/
 /*
 messagedb.Messages.findAll({
 	where: {
