@@ -49,7 +49,7 @@ messagedb.Messages.findAll({
 	console.log(result);
 });
 */
-/*
+
 usersdb.Users.findAll({
 		where: {
 			UserID: {
@@ -60,7 +60,7 @@ usersdb.Users.findAll({
 		result = userlist.map(instance => instance.toJSON());
 		console.log(result);
 	});
-*/
+
 io.on('connection', function (socket){
 	socket.on('addFriend', (friendusername, friendid, userid)=>{
 		//console.log('addFriend: ', friendusername, friendid, userid);
