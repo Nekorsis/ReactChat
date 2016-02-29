@@ -37,7 +37,7 @@ usersdb.Users.sync({force: true}).then(function () {
   });
 });
 
-messagedb.Messages.sync({force: true}).then((){
+messagedb.Messages.sync({force: true}).then(()=>{
 	return Messages.create({
 		DialogueID: 3,
 		UsersendID: 1,
