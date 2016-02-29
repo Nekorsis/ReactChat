@@ -1,7 +1,7 @@
 var Sequelize = require('sequelize');
 var config = require('../config.js');
 
-var sequelize = new Sequelize('UsersDB','root', '529406ab', {
+var sequelize = new Sequelize('UsersDB','root', '529406', {
   host: 'localhost',
   dialect: 'mysql',
 
