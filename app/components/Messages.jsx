@@ -16,7 +16,8 @@ export default class Messages extends React.Component {
 	};
 	sendDialogueMessage = () => {
 		if(this.state.messagevalue){
-			socket.emit('sendDialogueMessage', {currrendDiaglogue: this.props.currrendDiaglogue, userID: this.props.userID, username: this.props.username, messageValue: this.state.messagevalue} );
+			socket.emit('msg to room', {username: this.props.username, messagevalue: this.state.messagevalue, userid: this.props.userID});
+			//socket.emit('sendDialogueMessage', {currrendDiaglogue: this.props.currrendDiaglogue, userID: this.props.userID, username: this.props.username, messageValue: this.state.messagevalue} );
 			this.setState({
 				messagevalue: '',
 			});
@@ -26,7 +27,7 @@ export default class Messages extends React.Component {
 	};
 	sendmessage = () => {
 		if(this.state.messagevalue){
-			socket.emit('msg', this.props.userID, this.props.username, this.state.messagevalue, this.props.currentRoom);
+			socket.emit('msg', this.props.userID, this.props.username, this.state.messagevalue, this.props.currrendDiaglogue);
 			this.setState({
 				messagevalue: '',
 			});
@@ -34,11 +35,10 @@ export default class Messages extends React.Component {
 			return false;
 		};
 	};
-
 	render(){
 		return(
 				<div className="inputdiv">
-					<input type="text" placeholder="Enter your message here..." value={this.state.messagevalue} onChange={this.messageinputchanges}/>
+					<textarea type="text" className="textareainput" placeholder="Enter your message here..." value={this.state.messagevalue} onChange={this.messageinputchanges}/>
 					<input type="button" value="Send" onClick={this.sendDialogueMessage}></input>
 				</div>
 			)

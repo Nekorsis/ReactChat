@@ -49,7 +49,7 @@ messagedb.Messages.findAll({
 	console.log(result);
 });
 */
-
+/*
 usersdb.Users.findAll({
 		where: {
 			UserID: {
@@ -60,64 +60,53 @@ usersdb.Users.findAll({
 		result = userlist.map(instance => instance.toJSON());
 		console.log(result);
 	});
-
+*/
 io.on('connection', function (socket){
-
-	socket.on('startSingleConversation', (username) =>{
+	socket.on('addFriend', (friendusername, friendid, userid)=>{
+		//console.log('addFriend: ', friendusername, friendid, userid);
 		usersdb.Users.findOne({
-			where: {
-				Username: username
-			}
-		}).then((userinstance)=> {
-			io.sockets.connected[socket.id].emit('startSingleConversationSendBack', {UserID: userinstance.UserID, Username: userinstance.Username});
+			where: {UserID: userid,}
+		}).then((userinstance)=>{
+			var testArr = userinstance.friends.split(' ');
+			console.log('friends: ', testArr);
+			var testStr = "'" + friendid + "'";
+			console.log(testStr);
+			//userinstance.update({friends: userinstance.friends + friendid + " "});
+			if(!friendid in testArr){
+				console.log('found');
+			} else {
+				console.log('not found ', friendid);
+				return false;
+			};
 		});
 	});
-	socket.on('sendDialogueMessage', (messageObject) =>{
-		console.log(messageObject);
-		messagedb.Messages.create({
-			DialogueID: messageObject.currrendDiaglogue,
-			UsersendID: messageObject.userID,
-			Username: messageObject.username,
-			MessageValue: messageObject.messageValue,
-		}).then((messageinstance) =>{
-				io.sockets.connected[socket.id].emit('singleDialogueSendBack', messageinstance);
-		});
-		/*
-		messagedb.Messages.sync({force: false}).then(()=>{
-			return Messages.create({
-				DialogueID: messageObject.currrendDiaglogue,
-				UsersendID: messageObject.userID,
-				Username: messageObject.username,
-				MessageValue: messageObject.MessageValue,
-			});
-		});
-		*/
-	});
-	socket.on('requestDialogueHistory',(dialogueID)=>{
+	var roomname;
+	socket.on('setRoom', (username, userid, myid)=>{
+		socket.leave(roomname);
+		roomname = userid+myid; // fix this
+		console.log('roomname: ' + roomname);
+		socket.join(roomname);
+		socket.room =  roomname;
+		io.to(roomname).emit('roomisset', roomname);
 		messagedb.Messages.findAll({
 			where: {
-				DialogueID: dialogueID
+				DialogueID: roomname,
 			}
-		}).then((dialogueHistory)=>{
-			result = dialogueHistory.map(instance => instance.toJSON());
-			io.sockets.connected[socket.id].emit('dialogueHistorySendBack', result);
+		}).then((messagelist)=>{
+				result = messagelist.map(instance => instance.toJSON());
+				io.to(roomname).emit('history', result);
+		});
+	});
+	socket.on('msg to room', (messageobject)=>{
+		messagedb.Messages.create({
+			DialogueID: roomname,
+			UsersendID: messageobject.userid,
+			Username: messageobject.username,
+			MessageValue: messageobject.messagevalue,
+		}).then((messageinstance)=>{
+				io.to(roomname).emit('msg sendback', messageinstance);
 		})
 	});
-	var initialLoad = false;
-	if (!initialLoad){
-		messagedb.Messages.findAll({
-			where: {
-				MessageID: {
-					gt: 0
-				}
-			}
-		}).then(function (Messages){
-			result = Messages.map(instance => instance.toJSON());
-			//io.sockets.connected[socket.id].emit('historyload', result)
-			//io.sockets.emit('redux test', result);
-		});
-		initialLoad = true;
-	};
 
 	usersdb.Users.findAll({
 		where: {
@@ -128,7 +117,7 @@ io.on('connection', function (socket){
 	}).then(function(userlist){
 		result = userlist.map(instance => instance.toJSON());
 		io.sockets.connected[socket.id].emit('userlist', result);
-		io.sockets.emit('users online', usernames);
+		//io.sockets.emit('users online', usernames); don't need that
 	});
 
 	socket.on('loginuser', function(username, password){
@@ -146,7 +135,7 @@ io.on('connection', function (socket){
 				};
 				usernames.push(tempObj);
 				io.sockets.emit('users online', usernames);
-				io.sockets.connected[socket.id].emit('userset', userinstance.UserID, userinstance.Username);
+				io.sockets.connected[socket.id].emit('userset', {userid: userinstance.UserID, username: userinstance.Username});
 				return true;
 			})
 		}
@@ -177,24 +166,5 @@ io.on('connection', function (socket){
 			io.sockets.connected[socket.id].emit('historyload', result)
 		});
 		});
-	});
-	socket.on('addFriend', function(friendUsername, friendUserID, userID){
-		console.log("addFriend: ",friendUsername, friendUserID, userID);
-
-		usersdb.Users.findOne({
-			where: {
-				UserID: userID
-			}
-		}).then((userinstance)=>{
-			var tempArr = userinstance.friends.split(',');
-			console.log(tempArr);
-			if(tempArr.includes(friendUserID)){
-				console.log('fail');
-			} else {
-				console.log('true');
-			};
-		});
-
-
 	});
 });
