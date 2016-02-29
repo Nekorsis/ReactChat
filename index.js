@@ -19,7 +19,7 @@ var usernames = [];
 app.get('/', function (req, res){
 	res.render('index');
 });
-/*
+
 function SimpleValidation(name){
 	for (var i = 0; i<usernames.length; i++){
 		if (usernames[i].username === name){
@@ -27,7 +27,7 @@ function SimpleValidation(name){
 		}
 	}
 };
-*/
+
 /*
 usersdb.Users.sync({force: true}).then(function () {
   // Table created
