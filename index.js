@@ -27,16 +27,26 @@ function SimpleValidation(name){
 		}
 	}
 };
-/*
+
 usersdb.Users.sync({force: true}).then(function () {
   // Table created
   return Users.create({
-  	UserID: 4,
-    Username: 'Nekorsis666',
+  	UserID: 1,
+    Username: 'Nekorsis',
     password: '123'
   });
 });
-*/
+
+messagedb.Messages.sync({force: true}).then((){
+	return Messages.create({
+		DialogueID: 3,
+		UsersendID: 1,
+		Username: 'Nekorsis',
+		MessageID: '',
+		MessageValue: 'Hello',
+	})
+});
+
 /*
 messagedb.Messages.findAll({
 	where: {
@@ -49,7 +59,7 @@ messagedb.Messages.findAll({
 	console.log(result);
 });
 */
-
+/*
 usersdb.Users.findAll({
 		where: {
 			UserID: {
@@ -60,7 +70,7 @@ usersdb.Users.findAll({
 		result = userlist.map(instance => instance.toJSON());
 		console.log(result);
 	});
-
+*/
 io.on('connection', function (socket){
 	socket.on('addFriend', (friendusername, friendid, userid)=>{
 		//console.log('addFriend: ', friendusername, friendid, userid);
