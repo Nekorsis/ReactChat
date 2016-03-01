@@ -17,7 +17,6 @@
         speakwith: "",
   			usersonline: [],
   			friendsList: [],
-  			currentRoom: "",
   		}
   	}
   	componentDidMount(){
@@ -73,8 +72,6 @@
   		)
   	}
   }
-  	const test = connect((currentState)=>{
+  	export default connect((currentState)=>{
   		return {messages: currentState.messageListReducer, currentRoom: currentState.dialogueReducer, currentUser: currentState.userNameReducer, users: currentState.userlistReducer};
-  	});
-
-  export default test(Layout);
+  	})(Layout);

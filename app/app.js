@@ -37,7 +37,6 @@
 	const userlistReducer = (currentUsers = [], action) =>{
 		switch (action.type) {
 			case 'USERLIST':
-				console.log('userlist: ',currentUsers);
 				return currentUsers = action.usernames;
 			default:
 				return currentUsers;
@@ -52,7 +51,6 @@
 	const store = createStore(reducer);
 
 	socket.on('userlist', usernames => {
-		console.log('socket users: ', usernames)
 		store.dispatch({type: 'USERLIST', usernames});
 	});
 

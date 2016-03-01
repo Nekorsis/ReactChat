@@ -74,22 +74,17 @@ usersdb.Users.findAll({
 	});
 */
 io.on('connection', function (socket){
+	var testArr = [];
 	socket.on('addFriend', (friendusername, friendid, userid)=>{
 		//console.log('addFriend: ', friendusername, friendid, userid);
 		usersdb.Users.findOne({
 			where: {UserID: userid,}
 		}).then((userinstance)=>{
-			var testArr = userinstance.friends.split(' ');
-			console.log('friends: ', testArr);
-			var testStr = "'" + friendid + "'";
-			console.log(testStr);
-			//userinstance.update({friends: userinstance.friends + friendid + " "});
-			if(!friendid in testArr){
-				console.log('found');
-			} else {
-				console.log('not found ', friendid);
-				return false;
-			};
+			testArr = userinstance.friends.split(",");
+			console.log(testArr);
+			console.log('test ', testArr.indexOf(friendid));
+			//console.log(friendusername in testArr);
+			//userinstance.update({friends: ''});
 		});
 	});
 	var roomname;
