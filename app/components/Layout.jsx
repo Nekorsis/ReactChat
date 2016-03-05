@@ -29,7 +29,6 @@
   		if(!this.props.currentUser.username){
   			return false
   		} else {
-        console.log(friendUsername, friendUserID,  this.props.currentUser.userid);
   			socket.emit('addFriend', friendUsername, friendUserID, this.props.currentUser.userid);
   		};
   	};

@@ -17,7 +17,6 @@ export default class Messages extends React.Component {
 	sendDialogueMessage = () => {
 		if(this.state.messagevalue){
 			socket.emit('msg to room', {username: this.props.username, messagevalue: this.state.messagevalue, userid: this.props.userID});
-			//socket.emit('sendDialogueMessage', {currrendDiaglogue: this.props.currrendDiaglogue, userID: this.props.userID, username: this.props.username, messageValue: this.state.messagevalue} );
 			this.setState({
 				messagevalue: '',
 			});

@@ -1,7 +1,6 @@
 var Sequelize = require('sequelize');
-var config = require('../config.js');
 
-var sequelize = new Sequelize('UsersDB','root', '529406', {
+var sequelize = new Sequelize('UsersDB', 'Nekorsis', '529406ab', {
   host: 'localhost',
   dialect: 'mysql',
 
@@ -22,7 +21,6 @@ var Users = sequelize.define('UsersTable', {
 	Username: {
 		unique: true,
 		type: Sequelize.STRING,
-		unique: true,
 		field: 'username',
 	},
 	friends: {

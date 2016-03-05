@@ -5,14 +5,13 @@
 	import { connect } from 'react-redux';
 	import { Provider } from 'react-redux';
 	import { combineReducers } from 'redux'
-	var socket = io();
+	const socket = io();
 
-
-	const dialogueReducer = (currentState = " ", action) =>{
-		switch (action.type){
-			case 'STARTDIALOGUE':
-					return currentState + action.userinstance;
-			default:
+	const dialogueReducer = (currentState = ' ', action) => {
+  switch (action.type) {
+    case 'STARTDIALOGUE':
+      return currentState + action.userinstance;
+    default:
 				return currentState;
 		}
 	};
